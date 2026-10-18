@@ -1,0 +1,11 @@
+# Ordem = prioridade: ganha o primeiro grupo do jogador que esteja na lista; também define a ordem no tab
+tags:
+  - group: admin
+    tag: "&c[ADMIN]"
+  - group: vip
+    tag: "&2[VIP]"
+default-tag: "&7[Membro]"
+update-seconds: 5
+# Reservados (sem envio nesta versão)
+header: []
+footer: []
