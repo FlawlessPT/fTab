@@ -50,6 +50,32 @@ class TeamPlanTest {
                 plan().allTeams().stream().map(TeamSpec::name).toList());
     }
 
+    @Test void maisDe99RegrasLanca() {
+        List<GroupTag> r = new java.util.ArrayList<>();
+        for (int i = 0; i < 100; i++) r.add(new GroupTag("g" + i, "§a[X]"));
+        assertThrows(IllegalArgumentException.class, () -> new TeamPlan(r, "§7[M]"));
+        assertDoesNotThrow(() -> new TeamPlan(r.subList(0, 99), "§7[M]"));
+    }
+
+    @Test void nuloEElementosNulosContamComoVazio() {
+        Set<String> comNulo = new java.util.HashSet<>();
+        comNulo.add(null);
+        assertEquals("99_default", plan().select(null).name());
+        assertEquals("99_default", plan().select(comNulo).name());
+        comNulo.add("vip");
+        assertEquals("01_vip", plan().select(comNulo).name());
+    }
+
+    @Test void tagVaziaDaPrefixoVazio() {
+        TeamPlan p = new TeamPlan(List.of(new GroupTag("a", "")), "");
+        assertEquals("", p.select(Set.of("a")).prefix());
+        assertEquals("", p.select(Set.of()).prefix());
+    }
+
+    @Test void clipMantemCodigoDeCorCompleto() {
+        assertEquals("abcdefghijklmn§c", TeamPlan.clip("abcdefghijklmn§cX"));
+    }
+
     @Test void clippedWarningsListaTagsCortadas() {
         TeamPlan p = new TeamPlan(List.of(new GroupTag("a", "§c[MUITOLONGAAAAAA]")), "§7[M]");
         assertEquals(List.of("§c[MUITOLONGAAAAAA]"), p.clippedWarnings());

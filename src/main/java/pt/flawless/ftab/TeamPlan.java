@@ -15,6 +15,7 @@ public final class TeamPlan {
     private final List<String> warnings = new ArrayList<>();
 
     public TeamPlan(List<GroupTag> rules, String defaultTag) {
+        if (rules.size() > 99) throw new IllegalArgumentException("máximo de 99 regras de tags (índice de dois dígitos)");
         this.rules = List.copyOf(rules);
         for (int i = 0; i < rules.size(); i++)
             specs.add(spec(String.format("%02d_%s", i, rules.get(i).group()), rules.get(i).tag()));
@@ -22,7 +23,7 @@ public final class TeamPlan {
     }
 
     private TeamSpec spec(String name, String tag) {
-        String full = tag + " ";
+        String full = tag.isEmpty() ? "" : tag + " ";
         String clipped = clip(full);
         if (!clipped.equals(full)) warnings.add(tag);
         return new TeamSpec(name.length() > MAX ? name.substring(0, MAX) : name, clipped);
@@ -30,9 +31,10 @@ public final class TeamPlan {
 
     /** Primeira regra da lista cujo grupo o jogador tem; senão a equipa por omissão. */
     public TeamSpec select(Set<String> groups) {
+        if (groups == null) return defaultSpec;
         for (int i = 0; i < rules.size(); i++)
             for (String g : groups)
-                if (g.equalsIgnoreCase(rules.get(i).group())) return specs.get(i);
+                if (g != null && g.equalsIgnoreCase(rules.get(i).group())) return specs.get(i);
         return defaultSpec;
     }
 

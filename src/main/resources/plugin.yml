@@ -1,0 +1,5 @@
+name: fTab
+main: pt.flawless.ftab.FTab
+version: 1.0
+description: Tag de grupo no tab
+depend: [fAPI, fPermissions]
