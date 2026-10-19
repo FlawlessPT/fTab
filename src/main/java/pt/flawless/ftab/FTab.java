@@ -20,12 +20,16 @@ public class FTab extends JavaPlugin {
                     "aviso: tag cortada a 16 caracteres (limite do 1.8): " + tag, EMessageTypeEnum.INFO));
             service = new TabService(this, config.plan(), Permissions.get(), consoleLogger);
             service.createTeams();
-            getServer().getPluginManager().registerEvents(new TabListener(service), this);
+            TabHeaderFooter headerFooter = new TabHeaderFooter(config.header(), config.footer());
+            getServer().getPluginManager().registerEvents(new TabListener(service, headerFooter), this);
             long period = config.updateSeconds() * 20L;
             getServer().getScheduler().runTaskTimer(this, () -> {
                 for (Player p : Bukkit.getOnlinePlayers()) service.apply(p);
             }, period, period);
-            for (Player p : Bukkit.getOnlinePlayers()) service.apply(p); // /reload
+            for (Player p : Bukkit.getOnlinePlayers()) { // /reload
+                service.apply(p);
+                headerFooter.send(p);
+            }
         } catch (RuntimeException e) {
             consoleLogger.sendMessage("não foi possível iniciar o tab: " + e.getMessage(), EMessageTypeEnum.ERROR);
             getServer().getPluginManager().disablePlugin(this);

@@ -6,6 +6,8 @@ tags:
     tag: "&2[VIP]"
 default-tag: "&7[Membro]"
 update-seconds: 5
-# Reservados (sem envio nesta versão)
-header: []
-footer: []
+# Cabeçalho e rodapé da lista de jogadores (uma linha por entrada, cores com &; vazio = não envia)
+header:
+  - "&6&lFlawless"
+footer:
+  - "&7Bem-vindo ao servidor"

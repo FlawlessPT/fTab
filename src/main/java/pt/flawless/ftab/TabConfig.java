@@ -6,7 +6,7 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
-/** Configuração do fTab. {@code header}/{@code footer} são lidos mas ainda não usados (reservados). */
+/** Configuração do fTab. {@code header}/{@code footer}: uma linha por entrada, enviadas à lista de jogadores. */
 public record TabConfig(TeamPlan plan, int updateSeconds, List<String> header, List<String> footer) {
 
     /** Lê a config, convertendo {@code &} em {@code §}; {@code update-seconds} mínimo 1, por omissão 5. */
