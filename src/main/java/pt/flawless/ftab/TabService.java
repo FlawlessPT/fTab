@@ -111,7 +111,7 @@ public final class TabService {
         TeamSpec spec = plan.select(groups);
         if (!rank.isEmpty()) // uma equipa por grupo e rank: "[V] [ADMIN] nome"; shortcut: o 1.8 corta o prefixo a 16 caracteres
             spec = new TeamSpec(spec.name().substring(0, 2) + "_r" + String.format("%08x", rank.hashCode()),
-                    TeamPlan.clip(rank + " " + spec.prefix()));
+                    withRank(rank, spec.prefix()));
         // no 1.8 um jogador só está numa equipa por scoreboard e o addEntry tira-o da outra em silêncio:
         // se for de outro plugin, deixa-se em paz para não haver luta a cada atualização
         Team current = b.getPlayerTeam(player);
@@ -123,6 +123,15 @@ public final class TabService {
             target.addEntry(player.getName());
             if (current != null && current.getEntries().isEmpty()) current.unregister(); // equipa de rank antiga
         }
+    }
+
+    /** Rank + prefixo em 16 caracteres, sempre com o espaço final para não colar ao nome. */
+    static String withRank(String rank, String prefix) {
+        String full = rank + " " + prefix;
+        if (full.length() <= 16) return full;
+        if (prefix.startsWith(rank.substring(0, 2))) full = rank + " " + prefix.substring(2); // mesma cor: dispensa o código
+        if (full.length() <= 16) return full;
+        return TeamPlan.clip(full.substring(0, 15)).stripTrailing() + " ";
     }
 
     /** Tira o jogador das equipas do fTab. */
