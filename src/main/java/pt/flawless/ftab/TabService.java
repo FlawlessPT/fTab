@@ -125,13 +125,13 @@ public final class TabService {
         }
     }
 
-    /** Rank + prefixo em 16 caracteres, sempre com o espaço final para não colar ao nome. */
+    /** Rank + prefixo em 16 caracteres (o que sobra é cortado no fim). */
     static String withRank(String rank, String prefix) {
         String full = rank + " " + prefix;
         if (full.length() <= 16) return full;
         if (prefix.startsWith(rank.substring(0, 2))) full = rank + " " + prefix.substring(2); // mesma cor: dispensa o código
         if (full.length() <= 16) return full;
-        return TeamPlan.clip(full.substring(0, 15)).stripTrailing() + " ";
+        return TeamPlan.clip(full);
     }
 
     /** Tira o jogador das equipas do fTab. */
