@@ -13,6 +13,8 @@ import org.bukkit.scoreboard.Team;
 import pt.flawless.fapi.enums.EMessageTypeEnum;
 import pt.flawless.fapi.logs.FConsoleLogger;
 import pt.flawless.fapi.permissions.PermissionsApi;
+import pt.flawless.fapi.ranks.RankApi;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Mantém os jogadores nas equipas do scoreboard principal. Só mexe em equipas do fTab: nome
@@ -20,14 +22,18 @@ import pt.flawless.fapi.permissions.PermissionsApi;
  */
 public final class TabService {
     private static final Pattern OWNED = Pattern.compile("\\d\\d_.+");
+    private static final Pattern RANKED = Pattern.compile("\\d\\d_r[0-9a-f]{8}");
 
     private final JavaPlugin plugin;
     private final TeamPlan plan;
     private final PermissionsApi permissions;
     private final FConsoleLogger log;
+    private final RankApi ranks; // opcional (fRankup)
     private final Set<String> ownedNames = new HashSet<>();
 
-    public TabService(JavaPlugin plugin, TeamPlan plan, PermissionsApi permissions, FConsoleLogger log) {
+    public TabService(JavaPlugin plugin, TeamPlan plan, PermissionsApi permissions, FConsoleLogger log,
+                      RankApi ranks) {
+        this.ranks = ranks;
         this.plugin = plugin;
         this.plan = plan;
         this.permissions = permissions;
@@ -67,21 +73,25 @@ public final class TabService {
     }
 
     private boolean owned(Team t) {
-        return OWNED.matcher(t.getName()).matches() && ownedNames.contains(t.getName());
+        String n = t.getName();
+        return OWNED.matcher(n).matches() && (ownedNames.contains(n) || RANKED.matcher(n).matches());
     }
 
     /** Obtém os grupos e, na thread principal, põe o jogador na equipa certa. */
     public void apply(Player player) {
         UUID uuid = player.getUniqueId();
         try {
-            permissions.getGroups(uuid).whenComplete((groups, error) -> {
+            CompletableFuture<String> rank = ranks == null ? CompletableFuture.completedFuture("")
+                    : ranks.getRankNumeral(uuid).exceptionally(e -> "");
+            permissions.getGroups(uuid).thenCombine(rank, (g, r) -> new Object[]{g, r}).whenComplete((gr, error) -> {
                 if (error != null) {
                     log.sendMessage("falha ao obter os grupos de " + player.getName() + ": " + error.getMessage(),
                             EMessageTypeEnum.ERROR);
                     return;
                 }
                 try {
-                    Bukkit.getScheduler().runTask(plugin, () -> place(uuid, groups));
+                    @SuppressWarnings("unchecked") Set<String> groups = (Set<String>) gr[0];
+                    Bukkit.getScheduler().runTask(plugin, () -> place(uuid, groups, (String) gr[1]));
                 } catch (RuntimeException e) { // plugin desligado entretanto (IllegalPluginAccessException)
                     log.sendMessage("não foi possível agendar a atualização do tab: " + e.getMessage(),
                             EMessageTypeEnum.ERROR);
@@ -93,12 +103,15 @@ public final class TabService {
         }
     }
 
-    private void place(UUID uuid, Set<String> groups) {
+    private void place(UUID uuid, Set<String> groups, String rank) {
         Player player = Bukkit.getPlayer(uuid);
         if (player == null || !player.isOnline()) return;
         Scoreboard b = board();
         if (b == null) return;
         TeamSpec spec = plan.select(groups);
+        if (!rank.isEmpty()) // uma equipa por grupo e rank: "[V] [ADMIN] nome"; shortcut: o 1.8 corta o prefixo a 16 caracteres
+            spec = new TeamSpec(spec.name().substring(0, 2) + "_r" + String.format("%08x", rank.hashCode()),
+                    TeamPlan.clip(rank + " " + spec.prefix()));
         // no 1.8 um jogador só está numa equipa por scoreboard e o addEntry tira-o da outra em silêncio:
         // se for de outro plugin, deixa-se em paz para não haver luta a cada atualização
         Team current = b.getPlayerTeam(player);
@@ -106,7 +119,10 @@ public final class TabService {
                 spec.name());
         if (p == Placement.SKIP_FOREIGN) return;
         Team target = ensure(spec);
-        if (p == Placement.PLACE) target.addEntry(player.getName());
+        if (p == Placement.PLACE) {
+            target.addEntry(player.getName());
+            if (current != null && current.getEntries().isEmpty()) current.unregister(); // equipa de rank antiga
+        }
     }
 
     /** Tira o jogador das equipas do fTab. */

@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import pt.flawless.fapi.enums.EMessageTypeEnum;
 import pt.flawless.fapi.logs.FConsoleLogger;
 import pt.flawless.fapi.permissions.Permissions;
+import pt.flawless.fapi.ranks.Ranks;
 
 public class FTab extends JavaPlugin {
     private final FConsoleLogger consoleLogger = new FConsoleLogger(this.getName());
@@ -18,7 +19,8 @@ public class FTab extends JavaPlugin {
             TabConfig config = TabConfig.from(getConfig()); // lança IllegalArgumentException com mais de 99 regras
             config.plan().clippedWarnings().forEach(tag -> consoleLogger.sendMessage(
                     "aviso: tag cortada a 16 caracteres (limite do 1.8): " + tag, EMessageTypeEnum.INFO));
-            service = new TabService(this, config.plan(), Permissions.get(), consoleLogger);
+            service = new TabService(this, config.plan(), Permissions.get(), consoleLogger,
+                    getServer().getPluginManager().getPlugin("fRankup") != null ? Ranks.get() : null);
             service.createTeams();
             TabHeaderFooter headerFooter = new TabHeaderFooter(config.header(), config.footer());
             getServer().getPluginManager().registerEvents(new TabListener(service, headerFooter), this);
