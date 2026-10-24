@@ -7,12 +7,11 @@ import java.util.Set;
 
 /** Escolhe a equipa do tab de um jogador: a primeira regra da lista cujo grupo ele tem. */
 public final class TeamPlan {
-    private static final int MAX = 16;
+    private static final int MAX = 16; // limite do nome da equipa
 
     private final List<GroupTag> rules;
     private final List<TeamSpec> specs = new ArrayList<>();
     private final TeamSpec defaultSpec;
-    private final List<String> warnings = new ArrayList<>();
 
     public TeamPlan(List<GroupTag> rules, String defaultTag) {
         if (rules.size() > 99) throw new IllegalArgumentException("máximo de 99 regras de tags (índice de dois dígitos)");
@@ -24,9 +23,7 @@ public final class TeamPlan {
 
     private TeamSpec spec(String name, String tag) {
         String full = tag.isEmpty() ? "" : tag + " ";
-        String clipped = clip(full);
-        if (!clipped.equals(full)) warnings.add(tag);
-        return new TeamSpec(name.length() > MAX ? name.substring(0, MAX) : name, clipped);
+        return new TeamSpec(name.length() > MAX ? name.substring(0, MAX) : name, full);
     }
 
     /** Primeira regra da lista cujo grupo o jogador tem; senão a equipa por omissão. */
@@ -46,15 +43,4 @@ public final class TeamPlan {
         return all;
     }
 
-    /** Corta a 16 caracteres sem deixar um {@code §} solto no fim. */
-    public static String clip(String prefix) {
-        if (prefix.length() <= MAX) return prefix;
-        String s = prefix.substring(0, MAX);
-        return s.endsWith("§") ? s.substring(0, MAX - 1) : s;
-    }
-
-    /** Tags que foram cortadas (para o log no arranque). */
-    public List<String> clippedWarnings() {
-        return List.copyOf(warnings);
-    }
 }

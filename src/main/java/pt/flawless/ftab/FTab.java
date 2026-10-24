@@ -17,8 +17,6 @@ public class FTab extends JavaPlugin {
         try {
             saveDefaultConfig();
             TabConfig config = TabConfig.from(getConfig()); // lança IllegalArgumentException com mais de 99 regras
-            config.plan().clippedWarnings().forEach(tag -> consoleLogger.sendMessage(
-                    "aviso: tag cortada a 16 caracteres (limite do 1.8): " + tag, EMessageTypeEnum.INFO));
             service = new TabService(this, config.plan(), Permissions.get(), consoleLogger,
                     getServer().getPluginManager().getPlugin("fRankup") != null ? Ranks.get() : null);
             service.createTeams();

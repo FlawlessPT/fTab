@@ -31,14 +31,7 @@ class TeamPlanTest {
         assertEquals(10, p.length());
     }
 
-    @Test void clipCortaA16() {
-        assertEquals("abcdefghijklmnop", TeamPlan.clip("abcdefghijklmnopqrs"));
-        assertEquals("abc", TeamPlan.clip("abc"));
-    }
 
-    @Test void clipNaoDeixaSecaoSolta() {
-        assertEquals("abcdefghijklmno", TeamPlan.clip("abcdefghijklmno§c"));
-    }
 
     @Test void nomesDeEquipaAte16() {
         TeamPlan p = new TeamPlan(List.of(new GroupTag("muitolongonomedegrupo", "§a[X]")), "");
@@ -72,13 +65,5 @@ class TeamPlanTest {
         assertEquals("", p.select(Set.of()).prefix());
     }
 
-    @Test void clipMantemCodigoDeCorCompleto() {
-        assertEquals("abcdefghijklmn§c", TeamPlan.clip("abcdefghijklmn§cX"));
-    }
 
-    @Test void clippedWarningsListaTagsCortadas() {
-        TeamPlan p = new TeamPlan(List.of(new GroupTag("a", "§c[MUITOLONGAAAAAA]")), "§7[M]");
-        assertEquals(List.of("§c[MUITOLONGAAAAAA]"), p.clippedWarnings());
-        assertTrue(plan().clippedWarnings().isEmpty());
-    }
 }
