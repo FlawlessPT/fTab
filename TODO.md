@@ -7,3 +7,5 @@
 - Jogador numa equipa de outro plugin não recebe a tag de grupo (fica na equipa dele); sem tratamento de conflitos.
 - Equipas `NN_` guardadas no `scoreboard.dat` após crash/kill ou depois de mudar a config ficam vazias e nunca são limpas (só se limpam as do plano atual).
 - Migração Paper 1.21: `setScoreboard` do fScoreboard sobrepõe o scoreboard de outro plugin; `TeamPlanTest` com linhas em branco a mais.
+
+- Reload de config exige `/freload plugin` (plano de equipas, cabeçalho e período são fixados no arranque).
